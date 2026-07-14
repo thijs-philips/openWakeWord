@@ -113,6 +113,9 @@ venv.bak/
 # Pretrained models are auto-downloaded at runtime (openwakeword.utils.download_models)
 openwakeword/resources/models/
 
+# Copilot/agent customization files (local tooling, not part of the project)
+.github/
+
 # Spyder project settings
 .spyderproject
 .spyproject
