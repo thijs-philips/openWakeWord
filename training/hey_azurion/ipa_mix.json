@@ -1,0 +1,187 @@
+{
+  "voice_hint": "en-US-AndrewNeural",
+  "phrase_template": "Hey <phoneme ipa='...'>Azurion</phoneme>.",
+  "total_weight": 462,
+  "stems": [
+    {
+      "code": "v02",
+      "ipa": "əˈzʊəri",
+      "weight": 10,
+      "label": "a-ZURE-ree-  (z + CURE)"
+    },
+    {
+      "code": "v08",
+      "ipa": "əˈzuːri",
+      "weight": 10,
+      "label": "a-ZOO-ree-   (z + GOOSE)"
+    },
+    {
+      "code": "v07",
+      "ipa": "əˈzɜːri",
+      "weight": 1,
+      "label": "a-ZURR-ree-  (z + NURSE)"
+    },
+    {
+      "code": "v09",
+      "ipa": "əˈzʊri",
+      "weight": 1,
+      "label": "a-ZUR-ree-   (z + short FOOT)"
+    }
+  ],
+  "endings": [
+    {
+      "code": "un",
+      "ipa": "ən",
+      "weight": 10,
+      "label": "'-un'  (schwa, dominant)"
+    },
+    {
+      "code": "in",
+      "ipa": "ɪn",
+      "weight": 5,
+      "label": "'-in'  (KIT vowel)"
+    },
+    {
+      "code": "uhn",
+      "ipa": "ʌn",
+      "weight": 5,
+      "label": "'-uhn' (STRUT vowel)"
+    },
+    {
+      "code": "on",
+      "ipa": "ɒn",
+      "weight": 1,
+      "label": "'-on'  (LOT vowel, sprinkle)"
+    }
+  ],
+  "combinations": [
+    {
+      "id": "v02__un",
+      "stem": "v02",
+      "ending": "un",
+      "ipa": "əˈzʊəriən",
+      "weight": 100,
+      "probability": 0.21645021645021645
+    },
+    {
+      "id": "v02__in",
+      "stem": "v02",
+      "ending": "in",
+      "ipa": "əˈzʊəriɪn",
+      "weight": 50,
+      "probability": 0.10822510822510822
+    },
+    {
+      "id": "v02__uhn",
+      "stem": "v02",
+      "ending": "uhn",
+      "ipa": "əˈzʊəriʌn",
+      "weight": 50,
+      "probability": 0.10822510822510822
+    },
+    {
+      "id": "v02__on",
+      "stem": "v02",
+      "ending": "on",
+      "ipa": "əˈzʊəriɒn",
+      "weight": 10,
+      "probability": 0.021645021645021644
+    },
+    {
+      "id": "v08__un",
+      "stem": "v08",
+      "ending": "un",
+      "ipa": "əˈzuːriən",
+      "weight": 100,
+      "probability": 0.21645021645021645
+    },
+    {
+      "id": "v08__in",
+      "stem": "v08",
+      "ending": "in",
+      "ipa": "əˈzuːriɪn",
+      "weight": 50,
+      "probability": 0.10822510822510822
+    },
+    {
+      "id": "v08__uhn",
+      "stem": "v08",
+      "ending": "uhn",
+      "ipa": "əˈzuːriʌn",
+      "weight": 50,
+      "probability": 0.10822510822510822
+    },
+    {
+      "id": "v08__on",
+      "stem": "v08",
+      "ending": "on",
+      "ipa": "əˈzuːriɒn",
+      "weight": 10,
+      "probability": 0.021645021645021644
+    },
+    {
+      "id": "v07__un",
+      "stem": "v07",
+      "ending": "un",
+      "ipa": "əˈzɜːriən",
+      "weight": 10,
+      "probability": 0.021645021645021644
+    },
+    {
+      "id": "v07__in",
+      "stem": "v07",
+      "ending": "in",
+      "ipa": "əˈzɜːriɪn",
+      "weight": 5,
+      "probability": 0.010822510822510822
+    },
+    {
+      "id": "v07__uhn",
+      "stem": "v07",
+      "ending": "uhn",
+      "ipa": "əˈzɜːriʌn",
+      "weight": 5,
+      "probability": 0.010822510822510822
+    },
+    {
+      "id": "v07__on",
+      "stem": "v07",
+      "ending": "on",
+      "ipa": "əˈzɜːriɒn",
+      "weight": 1,
+      "probability": 0.0021645021645021645
+    },
+    {
+      "id": "v09__un",
+      "stem": "v09",
+      "ending": "un",
+      "ipa": "əˈzʊriən",
+      "weight": 10,
+      "probability": 0.021645021645021644
+    },
+    {
+      "id": "v09__in",
+      "stem": "v09",
+      "ending": "in",
+      "ipa": "əˈzʊriɪn",
+      "weight": 5,
+      "probability": 0.010822510822510822
+    },
+    {
+      "id": "v09__uhn",
+      "stem": "v09",
+      "ending": "uhn",
+      "ipa": "əˈzʊriʌn",
+      "weight": 5,
+      "probability": 0.010822510822510822
+    },
+    {
+      "id": "v09__on",
+      "stem": "v09",
+      "ending": "on",
+      "ipa": "əˈzʊriɒn",
+      "weight": 1,
+      "probability": 0.0021645021645021645
+    }
+  ]
+}

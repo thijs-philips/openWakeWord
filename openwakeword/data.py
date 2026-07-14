@@ -36,6 +36,38 @@ import mutagen
 import acoustics
 
 
+# --- LOCAL PATCH (hey_azurion training) --------------------------------------
+# torchaudio 2.11 dropped its native WAV loader and now routes everything
+# through torchcodec, which on Windows requires the FFmpeg *shared* (DLL)
+# build. We only ever load 16-bit PCM WAVs here, so replace torchaudio.load
+# with a soundfile-backed shim that returns the same (Tensor[C,T], int) tuple.
+def _torchaudio_load_via_soundfile(uri, *args, **kwargs):
+    import soundfile as _sf
+    _data, _sr = _sf.read(str(uri), always_2d=True, dtype="float32")
+    # soundfile returns (T, C); torchaudio returns (C, T)
+    return torch.from_numpy(_data.T).contiguous(), int(_sr)
+
+
+torchaudio.load = _torchaudio_load_via_soundfile
+
+
+def _torchaudio_info_via_soundfile(uri, *args, **kwargs):
+    import soundfile as _sf
+    info = _sf.info(str(uri))
+
+    class _Info:
+        num_frames = info.frames
+        sample_rate = info.samplerate
+        num_channels = info.channels
+
+    return _Info()
+
+
+torchaudio.info = _torchaudio_info_via_soundfile
+# -----------------------------------------------------------------------------
+
+
+
 # Load audio clips and structure into clips of the same length
 def stack_clips(audio_data, clip_size=16000*2):
     """
@@ -884,6 +916,21 @@ def trim_mmap(mmap_path):
         else:
             mmap_file2[i:i+1024] = mmap_file1[i:i+1024].copy()
             mmap_file2.flush()
+
+    # Release mmap handles before delete/rename (required on Windows).
+    # numpy.memmap stores the underlying mmap as `._mmap`; close it explicitly.
+    try:
+        mmap_file1._mmap.close()
+    except Exception:
+        pass
+    try:
+        mmap_file2._mmap.close()
+    except Exception:
+        pass
+    del mmap_file1
+    del mmap_file2
+    import gc
+    gc.collect()
 
     # Remove old mmaped file
     os.remove(mmap_path)

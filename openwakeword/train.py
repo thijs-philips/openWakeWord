@@ -573,22 +573,28 @@ class Model(nn.Module):
 # Separate function to convert onnx models to tflite format
 def convert_onnx_to_tflite(onnx_model_path, output_path):
     """Converts an ONNX version of an openwakeword model to the Tensorflow tflite format."""
-    # imports
-    import onnx
-    from onnx_tf.backend import prepare
-    import tensorflow as tf
+    # Use onnx2tf (modern, maintained, works with current onnx/TF versions on Windows)
+    import shutil
+    import onnx2tf
 
-    # Convert to tflite from onnx model
-    onnx_model = onnx.load(onnx_model_path)
-    tf_rep = prepare(onnx_model, device="CPU")
     with tempfile.TemporaryDirectory() as tmp_dir:
-        tf_rep.export_graph(os.path.join(tmp_dir, "tf_model"))
-        converter = tf.lite.TFLiteConverter.from_saved_model(os.path.join(tmp_dir, "tf_model"))
-        tflite_model = converter.convert()
+        onnx2tf.convert(
+            input_onnx_file_path=onnx_model_path,
+            output_folder_path=tmp_dir,
+            copy_onnx_input_output_names_to_tflite=True,
+            non_verbose=True,
+        )
+        # onnx2tf writes several variants; prefer float32
+        candidate = os.path.join(tmp_dir, "model_float32.tflite")
+        if not os.path.exists(candidate):
+            # fallback to first .tflite found
+            tflites = [f for f in os.listdir(tmp_dir) if f.endswith(".tflite")]
+            if not tflites:
+                raise RuntimeError(f"onnx2tf produced no .tflite in {tmp_dir}: {os.listdir(tmp_dir)}")
+            candidate = os.path.join(tmp_dir, tflites[0])
 
-        logging.info(f"####\nSaving tflite mode to '{output_path}'")
-        with open(output_path, 'wb') as f:
-            f.write(tflite_model)
+        logging.info(f"####\nSaving tflite model to '{output_path}'")
+        shutil.copyfile(candidate, output_path)
 
     return None
 
@@ -868,8 +874,14 @@ if __name__ == '__main__':
             n_cpus = 1
         else:
             n_cpus = n_cpus//2
-        X_train = torch.utils.data.DataLoader(IterDataset(batch_generator),
-                                              batch_size=None, num_workers=n_cpus, prefetch_factor=16)
+        # On Windows, DataLoader uses spawn for multiprocessing which can't
+        # pickle the lambda-based batch_generator. Fall back to single-process.
+        if os.name == "nt":
+            X_train = torch.utils.data.DataLoader(IterDataset(batch_generator),
+                                                  batch_size=None, num_workers=0)
+        else:
+            X_train = torch.utils.data.DataLoader(IterDataset(batch_generator),
+                                                  batch_size=None, num_workers=n_cpus, prefetch_factor=16)
 
         X_val_fp = np.load(config["false_positive_validation_data_path"])
         X_val_fp = np.array([X_val_fp[i:i+input_shape[0]] for i in range(0, X_val_fp.shape[0]-input_shape[0], 1)])  # reshape to match model

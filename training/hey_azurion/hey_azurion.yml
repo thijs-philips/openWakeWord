@@ -1,0 +1,123 @@
+## openWakeWord training config — "Hey, Azurion"
+##
+## All paths are absolute Windows paths (forward slashes are accepted by
+## openWakeWord's path handling). Adjust the few "TUNE ME" sections after the
+## first training run depending on observed val FP / recall.
+##
+## Run with:
+##   D:\Github\openWakeWord\training\hey_azurion\.venv\Scripts\python.exe ^
+##     -m openwakeword.train ^
+##     --training_config D:\Github\openWakeWord\training\hey_azurion\hey_azurion.yml ^
+##     --augment_clips --train_model --convert_to_tflite
+
+# ------------------------------------------------------------------
+# Identity
+# ------------------------------------------------------------------
+model_name: "hey_azurion"
+target_phrase:
+  - "Hey, Azurion."
+custom_negative_phrases: []
+
+# ------------------------------------------------------------------
+# Generation flags — these only matter when running with --generate_clips.
+# We pre-generated all positives/negatives outside the trainer (see
+# generate_training_clips.py) so the trainer just consumes the existing
+# WAV files. n_samples* still need to be populated because the trainer
+# reads them for safety checks before clip generation.
+# ------------------------------------------------------------------
+n_samples: 5000
+n_samples_val: 500
+tts_batch_size: 50
+augmentation_batch_size: 16
+
+# Piper is not used (we replaced it with Azure Speech + gpt-4o-mini-tts),
+# but the trainer does `from generate_samples import generate_samples`
+# unconditionally at startup. Point at a stub that raises if called.
+piper_sample_generator_path: "D:/Github/openWakeWord/training/hey_azurion/_piper_stub"
+
+# ------------------------------------------------------------------
+# Data locations — point at the WAV folders we already built
+# ------------------------------------------------------------------
+# The trainer reads clips from `{output_dir}/{model_name}/positive_train`
+# (also positive_test / negative_train / negative_test). Our existing
+# generated clips live under .../training/hey_azurion/tts/<split>/, so:
+#
+#   ONE-TIME SETUP STEP (run before first training invocation):
+#     Rename-Item D:\Github\openWakeWord\training\hey_azurion\tts `
+#                 D:\Github\openWakeWord\training\hey_azurion\hey_azurion
+#
+# After that rename the layout is:
+#   .../training/hey_azurion/                 <- output_dir
+#       hey_azurion/                          <- model_name
+#           positive_train/  positive_test/
+#           negative_train/  negative_test/
+#   ...and the trainer will write hey_azurion.onnx / .tflite into
+#   output_dir alongside it.
+output_dir: "D:/Github/openWakeWord/training/hey_azurion"
+
+# ------------------------------------------------------------------
+# Augmentation — RIRs + background mix
+# ------------------------------------------------------------------
+rir_paths:
+  - "D:/Github/openWakeWord/training/hey_azurion/rirs"
+
+background_paths:
+  - "D:/Github/openWakeWord/training/hey_azurion/backgrounds/hospital_or"   #   389 clips — deployment domain
+  - "D:/Github/openWakeWord/training/hey_azurion/backgrounds/household"     # ~2400 clips — generalisation
+  - "D:/Github/openWakeWord/training/hey_azurion/backgrounds/tv_radio"      #  ~600 clips — TV/Radio FP guard
+
+# Duplication multipliers (clip-list is concatenated, then random-sampled).
+# Hospital OR is the real deployment domain → weight it heaviest.
+background_paths_duplication_rate:
+  - 5   # hospital_or
+  - 2   # household
+  - 1   # tv_radio
+
+# Run each clip through augmentation 2x — doubles effective dataset size
+# without re-synthesising audio. Combined with random RIR + bg mix, every
+# augmentation round produces a near-unique example.
+augmentation_rounds: 2
+
+# ------------------------------------------------------------------
+# Pre-computed features for bulk speech-negative training + FP validation
+# ------------------------------------------------------------------
+# 2000 hours of ACAV100M speech, encoded as openWakeWord features. This
+# is the bulk speech-negative pool — far more than our ~5k hand-curated
+# adversarial negatives.
+feature_data_files:
+  "ACAV100M_sample": "D:/Github/openWakeWord/training/hey_azurion/features/openwakeword_features_ACAV100M_2000_hrs_16bit.npy"
+
+# Validation-only FP corpus (~11 h of speech/noise/music). Used to pick
+# the best checkpoint during auto_train.
+false_positive_validation_data_path: "D:/Github/openWakeWord/training/hey_azurion/features/validation_set_features.npy"
+
+# ------------------------------------------------------------------
+# Batch composition
+# ------------------------------------------------------------------
+# Bulk speech negatives dominate the batch (Reddit-recommended ratio).
+# Positives and adversarial negatives are kept balanced and modest so
+# the model can't over-fit to either.
+batch_n_per_class:
+  "ACAV100M_sample": 1024
+  "adversarial_negative": 128
+  "positive": 128
+
+# ------------------------------------------------------------------
+# Model architecture
+# ------------------------------------------------------------------
+# DNN at layer_size=128 is a good sweet spot for a 3-word phrase. RNN
+# would give slightly better recall in noise but ~2x inference cost.
+model_type: "dnn"
+layer_size: 128
+
+# ------------------------------------------------------------------
+# Training schedule (auto_train wraps these into a cosine LR + neg-weight ramp)
+# ------------------------------------------------------------------
+steps: 50000
+
+# Ramp from 1 to max_negative_weight linearly across `steps`. The
+# auto-trainer picks the checkpoint that best satisfies
+# `target_false_positives_per_hour` on the validation FP corpus while
+# preserving recall.
+max_negative_weight: 1500
+target_false_positives_per_hour: 0.2

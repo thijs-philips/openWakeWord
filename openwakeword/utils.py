@@ -597,6 +597,15 @@ def compute_features_from_generator(generator, n_total, clip_duration, output_fi
         row_counter += features.shape[0]
         fp.flush()
 
+    # Release the writer mmap before trimming (Windows file-locking).
+    try:
+        fp._mmap.close()
+    except Exception:
+        pass
+    del fp
+    import gc
+    gc.collect()
+
     # Trip empty rows from the mmapped array
     trim_mmap(output_file)
 

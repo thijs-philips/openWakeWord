@@ -1,0 +1,7 @@
+openwakeword>=0.6.0
+sounddevice>=0.5
+numpy>=1.24
+# Inference backend — pick ONE of the two below.
+# ONNX runtime works on every platform we care about:
+onnxruntime>=1.17
+# If you want the smaller TFLite runtime instead, install ai_edge_litert or tflite-runtime.

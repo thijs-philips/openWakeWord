@@ -1,0 +1,17 @@
+# hey_azurion training utilities — dependencies
+#
+# Used by:
+#   pronunciation_test.py   — openai, httpx, python-dotenv
+#   build_backgrounds.py    — datasets, soundfile, scipy, numpy
+#   filter_rirs.py          — datasets, soundfile, scipy, numpy
+
+# Azure / TTS
+openai>=1.40.0
+httpx>=0.27.0
+python-dotenv>=1.0.1
+
+# Audio + dataset I/O
+numpy>=1.26
+scipy>=1.11
+soundfile>=0.12.1
+datasets>=2.20.0

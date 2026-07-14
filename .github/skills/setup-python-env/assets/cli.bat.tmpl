@@ -1,0 +1,5 @@
+@echo off
+if not defined VIRTUAL_ENV (
+    call "%~dp0.venv\Scripts\activate.bat"
+)
+python "%~dp0cli\{{PROJECT_NAME}}-cli.py" %*

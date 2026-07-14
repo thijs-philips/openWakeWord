@@ -110,6 +110,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# Pretrained models are auto-downloaded at runtime (openwakeword.utils.download_models)
+openwakeword/resources/models/
+
 # Spyder project settings
 .spyderproject
 .spyproject

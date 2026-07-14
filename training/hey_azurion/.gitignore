@@ -1,0 +1,18 @@
+# venv + caches
+.venv/
+__pycache__/
+*.py[codz]
+
+# generated audio / data
+out/
+backgrounds/
+rirs/
+
+# large generated feature caches (~16 GB) and generated training clips (~800 MB)
+features/
+hey_azurion/
+*.npy
+
+# any local secrets that sneak in
+.env
+*.env.local
